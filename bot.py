@@ -19,27 +19,21 @@ emoji_sets = [
     "💰💎💯"
 ]
 
-# ---------------------
 # Flask server (keep-alive)
-# ---------------------
 app = Flask('')
 @app.route('/')
 def home():
     return "Bot aktif 🚀"
 Thread(target=lambda: app.run(host='0.0.0.0', port=8080)).start()
 
-# ---------------------
-# /start komutu ile test mesajı
-# ---------------------
+# /start komutu
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     emojiler = random.choice(emoji_sets)
     mesaj = f"<b>{emojiler} —GÜN SONU— {emojiler}</b>"
     await context.bot.send_message(chat_id=update.effective_chat.id, text=mesaj, parse_mode='HTML')
     print("Test mesajı /start ile gönderildi")
 
-# ---------------------
 # Gün sonu mesajı
-# ---------------------
 async def daily_message():
     while True:
         now = datetime.now()
@@ -52,19 +46,12 @@ async def daily_message():
         await bot.send_message(chat_id=CHAT_ID, text=mesaj, parse_mode='HTML')
         print(f"Gün sonu mesajı gönderildi: {mesaj}")
 
-# ---------------------
 # Botu başlat
-# ---------------------
-async def start_bot():
-    app_bot = ApplicationBuilder().token(TOKEN).build()
-    app_bot.add_handler(CommandHandler("start", start))
-    # Gün sonu mesajını paralel çalıştır
-    asyncio.create_task(daily_message())
-    print("Bot başladı 😎 7/24 çalışacak")
-    await app_bot.initialize()
-    await app_bot.start()
-    # run_polling ile botu sürekli açık tut
-    await app_bot.run_polling()
+app_bot = ApplicationBuilder().token(TOKEN).build()
+app_bot.add_handler(CommandHandler("start", start))
+asyncio.create_task(daily_message())
 
-if __name__ == "__main__":
-    asyncio.run(start_bot())
+print("Bot başladı 😎 7/24 çalışacak")
+
+# Railway’de zaten event loop var → run_polling direkt kullan
+app_bot.run_polling()
