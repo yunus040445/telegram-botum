@@ -1,12 +1,14 @@
-import asyncio
 import random
 from datetime import datetime, timedelta
 from telegram import Bot, Update
 from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes
 from flask import Flask
 from threading import Thread
+import asyncio
 
+# ---------------------
 # Telegram Token ve Chat ID
+# ---------------------
 TOKEN = "8534122580:AAF6bhd46cnOvT-sgX4iLfYEx_qa12BOEmU"
 CHAT_ID = 5452763929
 
@@ -56,12 +58,19 @@ async def daily_message():
 # ---------------------
 # Botu başlat
 # ---------------------
-async def main():
+async def start_bot():
     app_bot = ApplicationBuilder().token(TOKEN).build()
     app_bot.add_handler(CommandHandler("start", start))
     # Gün sonu mesajını paralel çalıştır
     asyncio.create_task(daily_message())
     print("Bot başladı 😎 7/24 çalışacak")
-    await app_bot.run_polling()
+    await app_bot.initialize()       # Initialize async uygulama
+    await app_bot.start()            # Başlat
+    await app_bot.updater.start_polling()  # Polling başlat
+    await app_bot.idle()             # Idle ile sürekli açık tut
 
-asyncio.run(main())
+# ---------------------
+# Event loop oluştur ve başlat
+# ---------------------
+loop = asyncio.get_event_loop()
+loop.run_until_complete(start_bot())
