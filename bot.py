@@ -54,9 +54,14 @@ async def daily_message():
 app_bot = ApplicationBuilder().token(TOKEN).build()
 app_bot.add_handler(CommandHandler("start", start))
 
-# run_polling() içinde background task başlatmak
-def start_background_tasks(application):
+# background task için ayrı async fonksiyon
+async def start_background_tasks():
     asyncio.create_task(daily_message())
+    print("Background görevler başlatıldı")
 
-# polling başlat ve background task ekle
-app_bot.run_polling(stop_signals=None, bootstrap=start_background_tasks)
+# Railway'de zaten çalışan event loop var
+loop = asyncio.get_event_loop()
+loop.create_task(start_background_tasks())
+
+# polling başlat
+app_bot.run_polling()
