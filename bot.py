@@ -19,7 +19,9 @@ emoji_sets = [
     "💰💎💯"
 ]
 
+# ---------------------
 # Flask server (keep-alive)
+# ---------------------
 app = Flask('')
 @app.route('/')
 def home():
@@ -33,7 +35,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await context.bot.send_message(chat_id=update.effective_chat.id, text=mesaj, parse_mode='HTML')
     print("Test mesajı /start ile gönderildi")
 
-# Gün sonu mesajı
+# Gün sonu mesajı fonksiyonu
 async def daily_message():
     while True:
         now = datetime.now()
@@ -46,12 +48,15 @@ async def daily_message():
         await bot.send_message(chat_id=CHAT_ID, text=mesaj, parse_mode='HTML')
         print(f"Gün sonu mesajı gönderildi: {mesaj}")
 
+# ---------------------
 # Botu başlat
+# ---------------------
 app_bot = ApplicationBuilder().token(TOKEN).build()
 app_bot.add_handler(CommandHandler("start", start))
-asyncio.create_task(daily_message())
 
-print("Bot başladı 😎 7/24 çalışacak")
+# run_polling() içinde background task başlatmak
+def start_background_tasks(application):
+    asyncio.create_task(daily_message())
 
-# Railway’de zaten event loop var → run_polling direkt kullan
-app_bot.run_polling()
+# polling başlat ve background task ekle
+app_bot.run_polling(stop_signals=None, bootstrap=start_background_tasks)
