@@ -6,9 +6,6 @@ from flask import Flask
 from threading import Thread
 import asyncio
 
-# ---------------------
-# Telegram Token ve Chat ID
-# ---------------------
 TOKEN = "8534122580:AAF6bhd46cnOvT-sgX4iLfYEx_qa12BOEmU"
 CHAT_ID = 5452763929
 
@@ -21,56 +18,43 @@ emoji_sets = [
     "💰💎💯"
 ]
 
-# ---------------------
 # Flask server (keep-alive)
-# ---------------------
 app = Flask('')
 @app.route('/')
 def home():
     return "Bot aktif 🚀"
 Thread(target=lambda: app.run(host='0.0.0.0', port=8080)).start()
 
-# ---------------------
-# /start komutu ile test mesajı
-# ---------------------
+# /start komutu
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     emojiler = random.choice(emoji_sets)
     mesaj = f"<b>{emojiler} —GÜN SONU— {emojiler}</b>"
     await context.bot.send_message(chat_id=update.effective_chat.id, text=mesaj, parse_mode='HTML')
     print("Test mesajı /start ile gönderildi")
 
-# ---------------------
-# Gün sonu mesajı
-# ---------------------
+# 23:59 mesajı
 async def daily_message():
     while True:
         now = datetime.now()
         next_run = now.replace(hour=23, minute=59, second=0, microsecond=0)
         if now >= next_run:
             next_run += timedelta(days=1)
-        wait_seconds = (next_run - now).total_seconds()
-        await asyncio.sleep(wait_seconds)
+        await asyncio.sleep((next_run - now).total_seconds())
         emojiler = random.choice(emoji_sets)
         mesaj = f"<b>{emojiler} —GÜN SONU— {emojiler}</b>"
         await bot.send_message(chat_id=CHAT_ID, text=mesaj, parse_mode='HTML')
         print(f"Gün sonu mesajı gönderildi: {mesaj}")
 
-# ---------------------
 # Botu başlat
-# ---------------------
 async def start_bot():
     app_bot = ApplicationBuilder().token(TOKEN).build()
     app_bot.add_handler(CommandHandler("start", start))
-    # Gün sonu mesajını paralel çalıştır
     asyncio.create_task(daily_message())
     print("Bot başladı 😎 7/24 çalışacak")
-    await app_bot.initialize()       # Initialize async uygulama
-    await app_bot.start()            # Başlat
-    await app_bot.updater.start_polling()  # Polling başlat
-    await app_bot.idle()             # Idle ile sürekli açık tut
+    await app_bot.initialize()
+    await app_bot.start()
+    await app_bot.updater.start_polling()
+    await app_bot.idle()
 
-# ---------------------
-# Event loop oluştur ve başlat
-# ---------------------
-loop = asyncio.get_event_loop()
-loop.run_until_complete(start_bot())
+if __name__ == "__main__":
+    asyncio.run(start_bot())
